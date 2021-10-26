@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 //app.use(morgan('short'));
 
-app.use('/', view);
+//app.use('/', view);
 app.use('/jukebox', jukebox);
 
 server.listen(port, () => {

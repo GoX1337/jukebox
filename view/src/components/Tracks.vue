@@ -1,0 +1,52 @@
+<template>
+  <Track v-for="(track, index) in tracks" :track="track" :index="index" :key="track.id"></Track>
+</template>
+
+<script>
+import Track from './Track.vue'
+import axios from 'axios';
+
+export default {
+  name: 'Tracks',
+  props: {
+  },
+  components: {
+    Track
+  },
+  data() {
+    return {
+      tracks: []
+    }
+  },
+  mounted() {
+      axios
+          .get('/jukebox/tracks', {
+            withCredentials: true
+          })
+          .then(response => {
+              if(response.data){
+                  this.tracks = response.data.items.map(t => t.track);
+              }
+          })
+          .catch(err => { console.error(err)});
+  },
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+h3 {
+  margin: 40px 0 0;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+a {
+  color: #42b983;
+}
+</style>

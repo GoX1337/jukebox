@@ -11,7 +11,7 @@ router.get('/callback', async (req, res) => {
     try {
         if(req.query.code){
             spotify.setAuthorizationCode(req.query.code);
-            res.redirect('http://localhost:8080');
+            res.redirect('http://localhost:8080/jukebox/tracks');
         } else {
             res.status(500).send();
         }

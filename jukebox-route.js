@@ -1,17 +1,17 @@
 require('dotenv').config();
 const express = require('express');
-const spotify = require('./spotify-api');
+const spotify = require('./spotify');
 const router = express.Router({ caseSensitive: true });
 
 router.get("/login", async (req, res) => {
-    res.redirect('https://accounts.spotify.com/authorize?' + spotify.buildAuthCodeFlowParams());
+    res.redirect(spotify.buildAuthCodeFlowUrl());
 });
 
 router.get('/callback', async (req, res) => {
     try {
         if(req.query.code){
             spotify.setAuthorizationCode(req.query.code);
-            res.redirect('http://localhost:8080/jukebox/tracks');
+            res.redirect('/jukebox/tracks');
         } else {
             res.status(500).send();
         }

@@ -17,8 +17,11 @@ const scope = 'playlist-modify-private playlist-read-private ' +
               'user-read-playback-position user-read-recently-played user-top-read ' + 
               'app-remote-control streaming user-follow-modify user-follow-read';
 
-axios.interceptors.request.use((config) => {
+axios.interceptors.request.use(async (config) => {
     if(config.url.indexOf(spotifyTokenUrl) == -1){
+        if(!token || moment().isAfter(tokenExpirationDate)){
+            await getToken();
+        }
         config.headers['Content-type'] = 'application/json';
         config.headers['Authorization'] = 'Bearer ' + token;
     }
@@ -69,9 +72,6 @@ let getToken = async (code, refresh) => {
 }
 
 module.exports.getTracks = async () => {    
-    if(!token || moment().isAfter(tokenExpirationDate)){
-        await getToken();
-    }
     const response = await axios({
         method: 'GET',
         url: spotifyApiUrl + '/playlists/' + process.env.JUKEBOX_PLAYLIST_ID,
@@ -80,9 +80,6 @@ module.exports.getTracks = async () => {
 }
 
 module.exports.getMe = async () => {    
-    if(!token || moment().isAfter(tokenExpirationDate)){
-        await getToken();
-    }
     const response = await axios({
         method: 'GET',
         url: 'https://api.spotify.com/v1/me'
@@ -91,9 +88,6 @@ module.exports.getMe = async () => {
 }
 
 module.exports.getPlaylist = async () => {    
-    if(!token || moment().isAfter(tokenExpirationDate)){
-        await getToken();
-    }
     const response = await axios({
         method: 'GET',
         url: spotifyApiUrl + '/playlists/' + process.env.JUKEBOX_PLAYLIST_ID
@@ -102,9 +96,6 @@ module.exports.getPlaylist = async () => {
 }
 
 module.exports.updatePlaylist = async () => {    
-    if(!token || moment().isAfter(tokenExpirationDate)){
-        await getToken();
-    }
     const response = await axios({
         method: 'PUT',
         url: spotifyApiUrl + '/playlists/' + process.env.JUKEBOX_PLAYLIST_ID + '/tracks',

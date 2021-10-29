@@ -62,4 +62,15 @@ router.get("/updatePlaylist", async (req, res) => {
     }
 });
 
+router.get("/spotify*", async (req, res) => {
+    try {
+        console.log(req.query)
+        const resp = await spotify.get(req.url.replace("/spotify", ""));
+        res.status(200).send(resp);
+    } catch(e){
+        console.error(e);
+        res.status(500).send();
+    }
+});
+
 module.exports = router;

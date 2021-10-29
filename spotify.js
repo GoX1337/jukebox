@@ -1,6 +1,8 @@
 require('dotenv').config();
 const moment = require('moment');
 const axios = require('axios');
+const Redis = require("ioredis");
+const redis = new Redis(); 
 
 const spotifyTokenUrl = 'https://accounts.spotify.com/api/token';
 const spotifyApiUrl   = "https://api.spotify.com/v1";
@@ -9,6 +11,37 @@ let token;
 let refreshToken;
 let tokenExpirationDate;
 let authorizationCode;
+
+redis.get("token", (err, value) => {
+    if (err) {
+      console.error(err);
+    } else {
+        if(value){
+          console.log(`Get token from redis ${value}`);
+          token = value;
+        }
+    }
+});
+redis.get("refreshToken", (err, value) => {
+    if (err) {
+      console.error(err);
+    } else {
+        if(value){
+          console.log(`Get refreshToken from redis ${value}`);
+          refreshToken = value;
+        }
+    }
+});
+redis.get("tokenExpirationDate", (err, value) => {
+    if (err) {
+      console.error(err);
+    } else {
+        if(value){
+          console.log(`Get tokenExpirationDate from redis ${value}`);
+          tokenExpirationDate = moment(value);
+        }
+    }
+});
 
 const scope = 'playlist-modify-private playlist-read-private ' +
               'playlist-modify-public playlist-read-collaborative ' + 
@@ -19,8 +52,10 @@ const scope = 'playlist-modify-private playlist-read-private ' +
 
 axios.interceptors.request.use(async (config) => {
     if(config.url.indexOf(spotifyTokenUrl) == -1){
-        if(!token || moment().isAfter(tokenExpirationDate)){
+        if(!token){
             await getToken();
+        } else if(token && moment().isAfter(tokenExpirationDate)){
+            await getToken(true);
         }
         config.headers['Content-type'] = 'application/json';
         config.headers['Authorization'] = 'Bearer ' + token;
@@ -39,10 +74,7 @@ module.exports.buildAuthCodeFlowUrl = () => {
     }).toString();
 }
 
-let getToken = async (code, refresh) => {
-    if(code){
-        authorizationCode = code;
-    }
+let getToken = async (refresh) => {
     const credentialsBase64 = Buffer.from(process.env.CLIENT_ID + ':' + process.env.CLIENT_SECRET).toString('base64');
     const params = new URLSearchParams();
     if(!refresh){
@@ -68,6 +100,9 @@ let getToken = async (code, refresh) => {
     tokenExpirationDate = moment().add(response.data.expires_in, 'seconds');
     console.log("Get new token from spotify api");
     console.log(`token: ${token}; expire at ${tokenExpirationDate}`);
+    redis.set("token", token);
+    redis.set("refreshToken", refreshToken);
+    redis.set("tokenExpirationDate", tokenExpirationDate.toISOString());
     return response.data;
 }
 
@@ -105,6 +140,14 @@ module.exports.updatePlaylist = async () => {
             "range_length": 1,
             "snapshot_id" : "NjIsNGY1YzM5NWE4MGQ3N2Q1NGNmMzUzYzU0NGI2MTVmMjRjYzM3ZjU2OQ=="
         }
+    });
+    return response.data;
+}
+
+module.exports.get = async (route) => {    
+    const response = await axios({
+        method: 'GET',
+        url: spotifyApiUrl + route
     });
     return response.data;
 }

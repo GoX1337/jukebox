@@ -34,6 +34,7 @@ router.get("/tracks", async (req, res) => {
 
 router.get("/me", async (req, res) => {
     try {
+        console.log(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const tracks = await spotify.getMe();
         res.status(200).send(tracks);
     } catch(e){
@@ -73,9 +74,18 @@ router.get("/*", async (req, res) => {
     }
 });
 
+router.post("/vote", async (req, res) => {
+    try {
+        console.log(req.body);
+        res.status(200).send();
+    } catch(e){
+        console.error(e.response.data);
+        res.status(500).send();
+    }
+});
+
 router.put("/*", async (req, res) => {
     try {
-        console.log(req.query)
         const resp = await spotify.call('PUT', req.url.replace("/spotify", ""));
         res.status(200).send(resp);
     } catch(e){

@@ -16,6 +16,19 @@
 </template>
 
 <script>
+import axios from 'axios';
+
+let vote = async (trackId, upvote) => {
+   axios
+      .post('/jukebox/vote', {
+        trackId: trackId,
+        upvote: upvote
+      })
+      .then(() => {
+      })
+      .catch(err => { console.error(err)});
+}
+
 export default {
   name: 'Track',
   props: {
@@ -27,11 +40,11 @@ export default {
     }
   },
   methods: {
-      upvote: function () {
-         console.log("upvote")
+      upvote: async function () {
+          await vote(this.track.id, true);
       },
-      downvote: function () {
-         console.log("downvote")
+      downvote: async function () {
+          await vote(this.track.id, false);
       }
   }
 }

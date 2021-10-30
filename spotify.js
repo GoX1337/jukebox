@@ -4,9 +4,9 @@ const axios = require('axios');
 const Redis = require("ioredis");
 const redis = new Redis(); 
 
-const spotifyTokenUrl = 'https://accounts.spotify.com/api/token';
+const spotifyTokenUrl = "https://accounts.spotify.com/api/token";
 const spotifyApiUrl   = "https://api.spotify.com/v1";
-const redirectUri     = "http://localhost:8080/jukebox/callback";
+const redirectUri     = process.env.REDIRECT_URI;
 let token;
 let refreshToken;
 let tokenExpirationDate;

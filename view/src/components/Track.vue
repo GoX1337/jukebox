@@ -11,7 +11,7 @@
           <img class="arrow arrowDown" src="@/assets/arrow.png" />
         </a>
       </div>
-      <div v-if="index != 0" class="votecount">{{ track.vote || 1 }}</div>
+      <div v-if="index != 0" class="votecount">{{ track.voteCount || 0 }}</div>
     </div>
 </template>
 

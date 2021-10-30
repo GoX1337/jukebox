@@ -75,7 +75,7 @@ router.get("/cache/clear", async (req, res) => {
 
 router.post("/vote", async (req, res) => {
     try {
-        console.log("Vote:", req.body);
+        console.log("Vote: ", req.body);
         await spotify.vote(req.body.trackId, req.body.upvote);
         res.status(200).send();
     } catch(e){

@@ -125,6 +125,15 @@ module.exports.getTracks = async () => {
         tracks = response.data;
         redis.set("tracks", JSON.stringify(tracks));
     }
+
+    let votes = await redis.hgetall("votes");
+    if(votes){
+        tracks.items.forEach(item => {
+            if(votes[item.track.id]){
+                item.track.voteCount = Number(votes[item.track.id]);
+            }
+        });
+    }
     return tracks;
 }
 

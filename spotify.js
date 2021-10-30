@@ -85,25 +85,27 @@ let getToken = async (refresh) => {
         params.append('grant_type', 'refresh_token');
         params.append('refresh_token', refreshToken);
     }
-
-    const response = await axios({
-        method: 'POST',
-        url: spotifyTokenUrl,
-        params: params,
-        headers: { 
-            'Content-Type' : 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + credentialsBase64 
-        },
-    });
-    token = response.data.access_token;
-    refreshToken = response.data.refresh_token;
-    tokenExpirationDate = moment().add(response.data.expires_in, 'seconds');
-    console.log("Get new token from spotify api");
-    console.log(`token: ${token}; expire at ${tokenExpirationDate}`);
-    redis.set("token", token);
-    redis.set("refreshToken", refreshToken);
-    redis.set("tokenExpirationDate", tokenExpirationDate.toISOString());
-    return response.data;
+    try {
+        const response = await axios({
+            method: 'POST',
+            url: spotifyTokenUrl,
+            params: params,
+            headers: { 
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + credentialsBase64 
+            },
+        });
+        token = response.data.access_token;
+        refreshToken = response.data.refresh_token;
+        tokenExpirationDate = moment().add(response.data.expires_in, 'seconds');
+        console.log("Get new token from spotify api");
+        console.log(`token: ${token}; expire at ${tokenExpirationDate}`);
+        await redis.set("token", token);
+        redis.set("refreshToken", refreshToken);
+        redis.set("tokenExpirationDate", tokenExpirationDate.toISOString());
+    } catch(e){
+        console.error(e.data);
+    }
 }
 
 module.exports.getTracks = async () => {    

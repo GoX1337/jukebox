@@ -17,7 +17,7 @@ redis.get("token", (err, value) => {
       console.error(err);
     } else {
         if(value){
-          console.log(`Get token from redis ${value}`);
+          console.log(`Get token from redis`);
           token = value;
         }
     }
@@ -27,7 +27,7 @@ redis.get("refreshToken", (err, value) => {
       console.error(err);
     } else {
         if(value){
-          console.log(`Get refreshToken from redis ${value}`);
+          console.log(`Get refreshToken from redis`);
           refreshToken = value;
         }
     }
@@ -37,7 +37,7 @@ redis.get("tokenExpirationDate", (err, value) => {
       console.error(err);
     } else {
         if(value){
-          console.log(`Get tokenExpirationDate from redis ${value}`);
+          console.log(`Get tokenExpirationDate from redis`);
           tokenExpirationDate = moment(value);
         }
     }
@@ -61,7 +61,7 @@ axios.interceptors.request.use(async (config) => {
         config.headers['Authorization'] = 'Bearer ' + token;
     }
     return config;
-    }, function (error) {
+    }, (error) => {
     return Promise.reject(error);
 });
 
@@ -98,9 +98,8 @@ let getToken = async (refresh) => {
         token = response.data.access_token;
         refreshToken = response.data.refresh_token;
         tokenExpirationDate = moment().add(response.data.expires_in, 'seconds');
-        console.log("Get new token from spotify api");
-        console.log(`token: ${token}; expire at ${tokenExpirationDate}`);
-        await redis.set("token", token);
+        console.log("Get new token from spotify api"); 
+        redis.set("token", token);
         redis.set("refreshToken", refreshToken);
         redis.set("tokenExpirationDate", tokenExpirationDate.toISOString());
     } catch(e){
@@ -108,12 +107,25 @@ let getToken = async (refresh) => {
     }
 }
 
-module.exports.getTracks = async () => {    
-    const response = await axios({
-        method: 'GET',
-        url: spotifyApiUrl + '/playlists/' + process.env.JUKEBOX_PLAYLIST_ID,
-    });
-    return response.data.tracks;
+module.exports.getTracks = async () => {  
+    let tracks;
+    let t = await redis.get("tracks");
+    if(t){
+        tracks = JSON.parse(t);
+        console.log("Get tracks from redis");
+    } else {
+        console.log("No tracks in redis, get tracks calling spotify api");
+    }
+    
+    if(!tracks){
+        const response = await axios({
+            method: 'GET',
+            url: spotifyApiUrl + '/playlists/' + process.env.JUKEBOX_PLAYLIST_ID + '/tracks',
+        });
+        tracks = response.data;
+        redis.set("tracks", JSON.stringify(tracks));
+    }
+    return tracks;
 }
 
 module.exports.getMe = async () => {    
@@ -156,4 +168,14 @@ module.exports.call = async (method, route) => {
 
 module.exports.setAuthorizationCode = (code) => {
     authorizationCode = code;
+}
+
+module.exports.clearCache = () => {
+    redis.set("token", null);
+    redis.set("refreshToken", null);
+    redis.set("tokenExpirationDate", null);
+    redis.set("tracks", null);
+    token = null;
+    refreshToken = null;
+    tokenExpirationDate = null;
 }

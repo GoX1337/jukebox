@@ -66,7 +66,7 @@ router.get("/updatePlaylist", async (req, res) => {
 router.get("/cache/clear", async (req, res) => {
     try {
         await spotify.clearCache();
-        res.status(200).send("Cache cleared");
+        res.status(200).send("Redis cache cleared");
     } catch(e){
         console.error(e.response.data);
         res.status(500).send();
@@ -75,7 +75,8 @@ router.get("/cache/clear", async (req, res) => {
 
 router.post("/vote", async (req, res) => {
     try {
-        console.log(req.body);
+        console.log("Vote:", req.body);
+        await spotify.vote(req.body.trackId, req.body.upvote);
         res.status(200).send();
     } catch(e){
         console.error(e.response.data);

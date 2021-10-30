@@ -175,7 +175,12 @@ module.exports.clearCache = () => {
     redis.set("refreshToken", null);
     redis.set("tokenExpirationDate", null);
     redis.set("tracks", null);
+    redis.set("votes", null);
     token = null;
     refreshToken = null;
     tokenExpirationDate = null;
+}
+
+module.exports.vote = (trackId, upvote) => {
+    redis.hincrby("votes", trackId, (upvote ? 1 : -1));
 }

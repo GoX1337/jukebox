@@ -62,13 +62,24 @@ router.get("/updatePlaylist", async (req, res) => {
     }
 });
 
-router.get("/spotify*", async (req, res) => {
+router.get("/*", async (req, res) => {
     try {
         console.log(req.query)
-        const resp = await spotify.get(req.url.replace("/spotify", ""));
+        const resp = await spotify.call('GET', req.url.replace("/spotify", ""));
         res.status(200).send(resp);
     } catch(e){
-        console.error(e);
+        console.error(e.response.data);
+        res.status(500).send();
+    }
+});
+
+router.put("/*", async (req, res) => {
+    try {
+        console.log(req.query)
+        const resp = await spotify.call('PUT', req.url.replace("/spotify", ""));
+        res.status(200).send(resp);
+    } catch(e){
+        console.error(e.response.data);
         res.status(500).send();
     }
 });

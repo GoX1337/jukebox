@@ -144,9 +144,9 @@ module.exports.updatePlaylist = async () => {
     return response.data;
 }
 
-module.exports.get = async (route) => {    
+module.exports.call = async (method, route) => {    
     const response = await axios({
-        method: 'GET',
+        method: method,
         url: spotifyApiUrl + route
     });
     return response.data;

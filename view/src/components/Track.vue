@@ -1,17 +1,17 @@
 <template>
-    <div class="container">
-      <div class="Track">{{ index }}<strong class="artistName">{{ track.artists[0].name }}</strong>{{ track.name}}</div>
-      <div class="upvote">
+    <div class="container" v-bind:class="{ playing: index == 0 }" >
+      <div class="Track"><span v-if="index != 0">{{ index }}</span><strong class="artistName">{{ track.artists[0].name }}</strong>{{ track.name}}</div>
+      <div v-if="index != 0" class="upvote">
         <a href="#" v-on:click="upvote()">
           <img class="arrow" src="@/assets/arrow.png" />
         </a>
       </div>
-      <div class="downvote">
+      <div v-if="index != 0" class="downvote">
         <a href="#" v-on:click="downvote()">
           <img class="arrow arrowDown" src="@/assets/arrow.png" />
         </a>
       </div>
-      <div class="votecount">{{ track.vote || 1 }}</div>
+      <div v-if="index != 0" class="votecount">{{ track.vote || 1 }}</div>
     </div>
 </template>
 
@@ -39,6 +39,13 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+.playing {
+  border-width: 10px;
+  background-color: cadetblue;
+  font-size: 1.5em;
+  text-align: center;
+}
 
 .arrow {
   height: 30px;

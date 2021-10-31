@@ -131,6 +131,8 @@ module.exports.getTracks = async () => {
         tracks.items.forEach(item => {
             if(votes[item.track.id]){
                 item.track.voteCount = Number(votes[item.track.id]);
+            } else {
+                item.track.voteCount = 0;
             }
         });
     }
@@ -140,7 +142,7 @@ module.exports.getTracks = async () => {
 module.exports.getMe = async () => {    
     const response = await axios({
         method: 'GET',
-        url: 'https://api.spotify.com/v1/me'
+        url: spotifyApiUrl + '/me'
     });
     return response.data;
 }
@@ -180,16 +182,19 @@ module.exports.setAuthorizationCode = (code) => {
 }
 
 module.exports.clearCache = () => {
-    redis.set("token", null);
-    redis.set("refreshToken", null);
-    redis.set("tokenExpirationDate", null);
-    redis.set("tracks", null);
-    redis.set("votes", null);
+    redis.del("token");
+    redis.del("refreshToken");
+    redis.del("tokenExpirationDate");
+    redis.del("tracks");
+    redis.del("votes");
     token = null;
     refreshToken = null;
     tokenExpirationDate = null;
 }
 
-module.exports.vote = (trackId, upvote) => {
+module.exports.vote = async (ip, trackId, upvote) => {
     redis.hincrby("votes", trackId, (upvote ? 1 : -1));
+    let votes = await redis.hgetall("votes");
+    let tracks = await this.getTracks();
+    return tracks;
 }

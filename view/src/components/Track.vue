@@ -16,18 +16,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
-let vote = async (trackId, upvote) => {
-   axios
-      .post('/jukebox/vote', {
-        trackId: trackId,
-        upvote: upvote
-      })
-      .then(() => {
-      })
-      .catch(err => { console.error(err)});
-}
 
 export default {
   name: 'Track',
@@ -41,10 +29,10 @@ export default {
   },
   methods: {
       upvote: async function () {
-          await vote(this.track.id, true);
+          this.$emit('vote', this.index, this.track.id, true);
       },
       downvote: async function () {
-          await vote(this.track.id, false);
+          this.$emit('vote', this.index, this.track.id, false);
       }
   }
 }

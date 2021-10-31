@@ -34,6 +34,7 @@ export default {
       vote: async function (index, trackId, upvote) {
            axios
             .post('/jukebox/vote', {
+              index: index,
               trackId: trackId,
               upvote: upvote
             })

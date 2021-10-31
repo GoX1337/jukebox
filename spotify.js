@@ -3,6 +3,7 @@ const moment = require('moment');
 const axios = require('axios');
 const Redis = require("ioredis");
 const redis = new Redis(); 
+const fs = require('fs');
 
 const spotifyTokenUrl = "https://accounts.spotify.com/api/token";
 const spotifyApiUrl   = "https://api.spotify.com/v1";
@@ -11,6 +12,7 @@ let token;
 let refreshToken;
 let tokenExpirationDate;
 let authorizationCode;
+let playlistSnapshot;
 
 redis.get("token", (err, value) => {
     if (err) {
@@ -123,19 +125,26 @@ module.exports.getTracks = async () => {
             url: spotifyApiUrl + '/playlists/' + process.env.JUKEBOX_PLAYLIST_ID + '/tracks',
         });
         tracks = response.data;
-        redis.set("tracks", JSON.stringify(tracks));
     }
 
     let votes = await redis.hgetall("votes");
-    if(votes){
-        tracks.items.forEach(item => {
-            if(votes[item.track.id]){
-                item.track.voteCount = Number(votes[item.track.id]);
-            } else {
-                item.track.voteCount = 0;
-            }
-        });
-    }
+    tracks.items.forEach(item => {
+        delete item.track.available_markets;
+        delete item.track.album.available_markets;
+        if(votes && votes[item.track.id]){
+            item.track.voteCount = Number(votes[item.track.id]);
+        } else {
+            item.track.voteCount = 0;
+        }
+    });
+
+    tracks.items.sort((a, b) =>  b.track.voteCount - a.track.voteCount)
+    redis.set("tracks", JSON.stringify(tracks));
+
+    tracks.items.forEach(item => {
+       console.log("\t-", item.track.artists[0].name, item.track.name, item.track.voteCount)
+    });
+
     return tracks;
 }
 
@@ -155,15 +164,15 @@ module.exports.getPlaylist = async () => {
     return response.data;
 }
 
-module.exports.updatePlaylist = async () => {    
+let updatePlaylist = async (snapshotId, rangeStart, insertBefore, rangeLength) => {    
     const response = await axios({
         method: 'PUT',
         url: spotifyApiUrl + '/playlists/' + process.env.JUKEBOX_PLAYLIST_ID + '/tracks',
         data: {
-            "range_start": 0,
-            "insert_before": 10,
-            "range_length": 1,
-            "snapshot_id" : "NjIsNGY1YzM5NWE4MGQ3N2Q1NGNmMzUzYzU0NGI2MTVmMjRjYzM3ZjU2OQ=="
+            "range_start"  : rangeStart,
+            "insert_before": insertBefore,
+            "range_length" : rangeLength,
+            "snapshot_id"  : snapshotId
         }
     });
     return response.data;
@@ -192,9 +201,23 @@ module.exports.clearCache = () => {
     tokenExpirationDate = null;
 }
 
-module.exports.vote = async (ip, trackId, upvote) => {
+module.exports.vote = async (ip, trackId, upvote, index) => {
     redis.hincrby("votes", trackId, (upvote ? 1 : -1));
-    let votes = await redis.hgetall("votes");
     let tracks = await this.getTracks();
+    let updatedIndex = 0;
+    for(; updatedIndex < tracks.items.length; updatedIndex++){
+        if(tracks.items[updatedIndex].track.id == trackId){
+            break;
+        }
+    }
+
+    if(!playlistSnapshot){
+        const playlist = await this.getPlaylist();
+        playlistSnapshot = playlist.snapshot_id;
+        console.log("snapshot_id", playlistSnapshot);
+    }
+    let res = await updatePlaylist(playlistSnapshot, index, updatedIndex, 1);
+    playlistSnapshot = res.snapshot_id;
+    
     return tracks;
 }

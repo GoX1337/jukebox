@@ -76,11 +76,12 @@ router.get("/cache/clear", async (req, res) => {
 router.post("/vote", async (req, res) => {
     try {
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        console.log("Vote: ", ip, req.body);
-        const tracks = await spotify.vote(ip, req.body.trackId, req.body.upvote);
+        const body = req.body;
+        console.log("Vote: ", ip, body);
+        const tracks = await spotify.vote(ip, body.trackId, body.upvote, body.index);
         res.status(200).send(tracks);
     } catch(e){
-        console.error(e.response.data);
+        console.error(e);
         res.status(500).send();
     }
 });

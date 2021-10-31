@@ -3,7 +3,6 @@ const moment = require('moment');
 const axios = require('axios');
 const Redis = require("ioredis");
 const redis = new Redis(); 
-const fs = require('fs');
 
 const spotifyTokenUrl = "https://accounts.spotify.com/api/token";
 const spotifyApiUrl   = "https://api.spotify.com/v1";
@@ -142,7 +141,7 @@ module.exports.getTracks = async () => {
     redis.set("tracks", JSON.stringify(tracks));
 
     tracks.items.forEach(item => {
-       console.log("\t-", item.track.artists[0].name, item.track.name, item.track.voteCount)
+       console.log("  -", item.track.artists[0].name, item.track.name, item.track.voteCount)
     });
 
     return tracks;
@@ -218,6 +217,6 @@ module.exports.vote = async (ip, trackId, upvote, index) => {
     }
     let res = await updatePlaylist(playlistSnapshot, index, updatedIndex, 1);
     playlistSnapshot = res.snapshot_id;
-    
+
     return tracks;
 }

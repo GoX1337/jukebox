@@ -215,8 +215,8 @@ module.exports.vote = async (ip, trackId, upvote, index) => {
         playlistSnapshot = playlist.snapshot_id;
         console.log("snapshot_id", playlistSnapshot);
     }
-    let res = await updatePlaylist(playlistSnapshot, index, updatedIndex, 1);
-    playlistSnapshot = res.snapshot_id;
 
+    let res = await updatePlaylist(playlistSnapshot, index, updatedIndex > index ? updatedIndex + 1 : updatedIndex, 1);
+    playlistSnapshot = res.snapshot_id;
     return tracks;
 }

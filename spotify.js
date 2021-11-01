@@ -137,7 +137,10 @@ module.exports.getTracks = async () => {
         }
     });
 
-    tracks.items.sort((a, b) =>  b.track.voteCount - a.track.voteCount)
+    let head = tracks.items[0];
+    let tail = tracks.items.slice(1).sort((a, b) =>  b.track.voteCount - a.track.voteCount);
+    tracks.items = [head].concat(tail);
+
     redis.set("tracks", JSON.stringify(tracks));
 
     tracks.items.forEach(item => {

@@ -1,5 +1,5 @@
 <template>
-  <Track v-for="(track, index) in orderedTracks" :track="track" :index="index" :key="track.id" @vote="vote"></Track>
+  <Track v-for="(track, index) in tracks" :track="track" :index="index" :key="track.id" @vote="vote"></Track>
 </template>
 
 <script>
@@ -43,13 +43,6 @@ export default {
             })
             .catch(err => { console.error(err)});
       }
-  },
-  computed: {
-    orderedTracks: function() {
-        let orderedTracks = this.tracks;
-        orderedTracks.sort((a, b) =>  b.voteCount - a.voteCount);
-        return orderedTracks;
-    }
   }
 }
 </script>

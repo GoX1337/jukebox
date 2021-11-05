@@ -21,19 +21,22 @@ export default {
     }
   },
   mounted() {
-    this.socket.on("kek", (data) => {
-      console.log(data)
+    this.socket.on("next-song", () => {
+      console.log("next-song");
+      if(this.tracks){
+        this.tracks.shift();
+      }
     });
-      axios
-          .get('/jukebox/tracks', {
-            withCredentials: true
-          })
-          .then(response => {
-              if(response.data){
-                  this.tracks = response.data.items.map(t => t.track);
-              }
-          })
-          .catch(err => { console.error(err)});
+    axios
+        .get('/jukebox/tracks', {
+          withCredentials: true
+        })
+        .then(response => {
+            if(response.data){
+                this.tracks = response.data.items.map(t => t.track);
+            }
+        })
+        .catch(err => { console.error(err)});
   },
   methods: {
       vote: async function (index, trackId, upvote) {

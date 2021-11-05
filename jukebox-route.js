@@ -88,7 +88,6 @@ router.post("/vote", async (req, res) => {
 
 router.get("/spotify*", async (req, res) => {
     try {
-        console.log(req.query)
         const resp = await spotify.call('GET', req.url.replace("/spotify", ""));
         res.status(200).send(resp);
     } catch(e){

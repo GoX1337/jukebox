@@ -3,6 +3,8 @@ const morgan = require('morgan');
 const cors = require('cors');
 const app = express();
 const server = require('http').createServer(app);
+require('./socketio')(server);
+require('./timer');
 const view = require('./view');
 const jukebox = require('./jukebox-route');
 const port = process.env.PORT || 8080;

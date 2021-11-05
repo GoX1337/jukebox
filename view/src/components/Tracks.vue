@@ -5,6 +5,7 @@
 <script>
 import Track from './Track.vue'
 import axios from 'axios';
+import io from 'socket.io-client';
 
 export default {
   name: 'Tracks',
@@ -15,10 +16,14 @@ export default {
   },
   data() {
     return {
-      tracks: []
+      tracks: [],
+      socket: io()
     }
   },
   mounted() {
+    this.socket.on("kek", (data) => {
+      console.log(data)
+    });
       axios
           .get('/jukebox/tracks', {
             withCredentials: true

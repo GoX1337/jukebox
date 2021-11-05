@@ -104,7 +104,7 @@ let getToken = async (refresh) => {
         redis.set("refreshToken", refreshToken);
         redis.set("tokenExpirationDate", tokenExpirationDate.toISOString());
     } catch(e){
-        console.error(e.data);
+        console.error("error", e.response.data);
     }
 }
 
@@ -222,4 +222,12 @@ module.exports.vote = async (ip, trackId, upvote, index) => {
     let res = await updatePlaylist(playlistSnapshot, index, updatedIndex > index ? updatedIndex + 1 : updatedIndex, 1);
     playlistSnapshot = res.snapshot_id;
     return tracks;
+}
+
+module.exports.getPlayer = async () => {    
+    const response = await axios({
+        method: 'GET',
+        url: spotifyApiUrl + '/me/player'
+    });
+    return response.data;
 }
